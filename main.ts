@@ -9,6 +9,7 @@ import { interviewRoutes } from "./src/routes/interviews.ts";
 import { sessionRoutes } from "./src/routes/sessions.ts";
 
 import { handleWs } from "./src/ws/handler.ts";
+import { cors } from "hono/cors";
 
 const app = new Hono();
 
@@ -33,3 +34,18 @@ Deno.serve({ port: Number(Deno.env.get("PORT") ?? 8000) }, async (req) => {
 
   return app.fetch(req);
 });
+
+
+app.use(
+  "/api/*",
+  cors({
+    origin: [
+      "http://localhost:3000", // common React/Next dev
+      "http://localhost:8000", // your current origin in the error
+      "https://zyrentis-deno.codewithnaqvi.deno.net"
+    ],
+    allowMethods: ["GET", "POST", "OPTIONS"],
+    allowHeaders: ["Content-Type", "Authorization"],
+  }),
+);
+
