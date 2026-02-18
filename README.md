@@ -1,6 +1,7 @@
 # zyrentis-deno
 
-A minimal Deno + Hono example API with basic routes, middleware, and tests — perfect for demos and small services.
+A minimal Deno + Hono example API with basic routes, middleware, and tests —
+perfect for demos and small services.
 
 ---
 
@@ -82,7 +83,8 @@ The repo includes a small unit test for `add()` located in `main_test.ts`.
 
 ## ⚠️ Notes & TODOs
 
-- Authentication is stubbed for development — replace with real user store and password hashing before production.
+- Authentication is stubbed for development — replace with real user store and
+  password hashing before production.
 - Replace the hard-coded token with a real JWT implementation.
 
 ---
