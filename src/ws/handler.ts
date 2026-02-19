@@ -1,6 +1,8 @@
 import { verifyJwt } from "../lib/jwt_verify.ts";
 import { broadcast, getRoom, removeClient } from "./rooms.ts";
 
+import { loadDoc, saveDoc } from "./persist.ts";
+
 type IncomingMessage =
   | { type: "code_sync"; payload: { file: string; content: string } }
   | { type: string; payload?: unknown };
@@ -28,6 +30,15 @@ export async function handleWs(req: Request): Promise<Response> {
   const room = getRoom(sessionId);
   room.clients.add(socket);
 
+  // ... inside the WS connection bootstrap, once you have sessionId and room ...
+  if (room.version === 0 && Object.keys(room.docByFile).length === 0) {
+    const saved = await loadDoc(sessionId);
+    if (saved) {
+      room.docByFile = saved.docByFile;
+      room.version = saved.version;
+    }
+  }
+
   socket.onopen = () => {
     // Send initial snapshot so frontend can hydrate editor
     socket.send(JSON.stringify({
@@ -37,7 +48,7 @@ export async function handleWs(req: Request): Promise<Response> {
     }));
   };
 
-  socket.onmessage = (ev) => {
+  socket.onmessage = async (ev) => {
     let msg: IncomingMessage | null = null;
     try {
       msg = JSON.parse(String(ev.data));
@@ -51,11 +62,22 @@ export async function handleWs(req: Request): Promise<Response> {
     if (msg.type === "code_sync") {
       if (role !== "candidate") return;
 
-      const file = String((msg.payload as { file?: string })?.file ?? "main.py");
-      const content = String((msg.payload as { content?: string })?.content ?? "");
+      const file = String(
+        (msg.payload as { file?: string })?.file ?? "main.py",
+      );
+      const content = String(
+        (msg.payload as { content?: string })?.content ?? "",
+      );
 
       room.docByFile[file] = content;
       room.version += 1;
+
+      // Persist the updated document state to Redis so it survives redeploys
+      try {
+        await saveDoc(sessionId, room.version, room.docByFile);
+      } catch {
+        // swallow persistence errors for now (don't block realtime flow)
+      }
 
       broadcast(sessionId, {
         type: "code_sync",

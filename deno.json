@@ -13,6 +13,7 @@
     "hono": "npm:hono@^4.11.9",
     "zod": "npm:zod@^4.3.6",
     "@neon": "npm:@neondatabase/serverless@^1",
-    "jose": "npm:jose@^5"
+    "jose": "npm:jose@^5",
+    "upstash": "https://deno.land/x/upstash_redis@v1.14.0/mod.ts"
   }
 }
