@@ -12,7 +12,12 @@ const ws = new WebSocket(url);
 
 ws.onopen = () => {
   console.log("WS open");
-  ws.send(JSON.stringify({ type: "code_sync", payload: { file: "main.py", content: "// persisted from ws_test" } }));
+  ws.send(
+    JSON.stringify({
+      type: "code_sync",
+      payload: { file: "main.py", content: "// persisted from ws_test" },
+    }),
+  );
 };
 
 ws.onmessage = (e) => console.log("MSG:", e.data);
